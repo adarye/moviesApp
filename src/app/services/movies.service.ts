@@ -3,7 +3,7 @@ import { Injectable, PipeTransform } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment'
 
-import { Response, MovieDetail, Credit } from './../interfaces/interfaces';
+import { Response, MovieDetail, Credit, Genre } from './../interfaces/interfaces';
 const apiKey = environment.apiKey;
 const url = environment.url
 
@@ -12,7 +12,8 @@ const url = environment.url
 })
 export class MoviesService {
 
- popularesPage:number = 0;
+  popularesPage: number = 0;
+  genres: Genre[] = [];
 
   constructor(private http: HttpClient) { }
 
@@ -35,14 +36,29 @@ export class MoviesService {
     return this.ejecutarQuery<Response>(`/discover/movie?primary_release_date.gte=${inicio}&primary_release_date.lte=${fin}`);
 
   }
-  getPopulares(){
+  getPopulares() {
     this.popularesPage++
     return this.ejecutarQuery<Response>(`/discover/movie?sort_by=popularity.desc&page=${this.popularesPage}`)
   }
-  getMovieDetails(id:string){
+  getMovieDetails(id: string) {
     return this.ejecutarQuery<MovieDetail>(`/movie/${id}?`)
   }
-  getCredits(id:string){
+  getCredits(id: string) {
     return this.ejecutarQuery<Credit>(`/movie/${id}/credits?`)
+  }
+  searchMovie(param: string) {
+
+    return this.ejecutarQuery<Response>(`/search/movie?query=${param}`)
+
+  }
+  getGenres(): Promise <Genre[]> {
+
+    return new Promise(resolve => {
+      this.ejecutarQuery(`/genre/movie/list?a=1`).subscribe(res => {
+        this.genres = res['genres']
+        resolve(this.genres);
+      })
+    })
+
   }
 }
